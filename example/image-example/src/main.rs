@@ -21,21 +21,21 @@ async fn main() {
     let conf = get_configuration(None).await.unwrap();
     let leptos_options = conf.leptos_options;
     let addr = leptos_options.site_addr;
-    let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
+    let routes = generate_route_list(|| view! {  <App/> });
 
     let conf = get_configuration(None).await.unwrap();
     let leptos_options = conf.leptos_options;
     let root = leptos_options.site_root.clone();
 
-    cache_app_images(root, |cx: Scope| view! {cx, <App/>}, 1, || (), || ())
+    cache_app_images(root, || view! { <App/>}, 2, || (), || ())
         .await
         .expect("Failed to cache images");
 
     // build our application with a route
     let app = Router::new()
         .route("/api/*fn_name", post(leptos_axum::handle_server_fns))
-        .leptos_routes(&leptos_options, routes, |cx| {
-            view! { cx,
+        .leptos_routes(&leptos_options, routes, || {
+            view! {
                    <App/>
             }
         })
@@ -46,7 +46,7 @@ async fn main() {
 
     // run our app with hyper
     // `axum::Server` is a re-export of `hyper::Server`
-    log!("listening on http://{}", &addr);
+    println!("listening on http://{}", &addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await

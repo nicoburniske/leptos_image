@@ -1,0 +1,10 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <filter id="a" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"> 
+        <feGaussianBlur stdDeviation="20" edgeMode="duplicate"/> 
+        <feComponentTransfer>
+            <feFuncA type="discrete" tableValues="1 1"/> 
+        </feComponentTransfer> 
+    </filter> 
+    <image filter="url(#a)" x="0" y="0" height="100%" width="100%" href="data:image/webp;base64,UklGRvQAAABXRUJQVlA4IOgAAAAQBgCdASoZABEAPm0uk0YkIqGhMBgIAIANiWoAdwX2b8VeQEeAbwARBm6lDfdr7I6Dj5t+LaPXugAA/ucmqwsSH5h+RZK41p4TKey9bjNGw/DOtNauOgvcB13q5V8DHAdmxn6i43K//6/pS0Sukb71J2lFYs5UAk+FkhggxhH3quI0u2gBowX//16PmWdqQSc5PHMVIc0vCefSjfha3v//56XpX657FFSAQFfMXQQD0oj1xyBUYwOXoHiVExTSfmvb+vhXKVa4Tmywzw/iOsODcr4jgmKqFqvX6PG7c3th1cMAiuBIAAAA"/>
+</svg>

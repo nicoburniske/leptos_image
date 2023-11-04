@@ -1,6 +1,6 @@
 use crate::optimizer::*;
 
-use leptos::*;
+use leptos::{logging::debug_warn, *};
 use leptos_meta::Link;
 
 /**
@@ -10,7 +10,6 @@ use leptos_meta::Link;
 /// Images MUST be static. Will not work with dynamic images.
 #[component]
 pub fn Image(
-    cx: Scope,
     /// Image source. Should be path relative to root.
     #[prop(into)]
     src: String,
@@ -31,7 +30,7 @@ pub fn Image(
     #[prop(default = true)]
     lazy: bool,
     /// Image alt text.
-    #[prop(into, optional)]
+    #[prop(into)]
     alt: String,
     /// Style class for image.
     #[prop(into, optional)]
@@ -40,7 +39,7 @@ pub fn Image(
     if src.starts_with("http") {
         debug_warn!("Image component only supports static images.");
         let loading = if lazy { "lazy" } else { "eager" };
-        return view! { cx, <img src=src alt=alt class=class loading=loading/> }.into_view(cx);
+        return view! {  <img src=src alt=alt class=class loading=loading/> }.into_view();
     }
 
     let blur_image = {
@@ -70,7 +69,7 @@ pub fn Image(
     // Load images into context for blur generation.
     // Happens on server start.
     #[cfg(feature = "ssr")]
-    if let Some(context) = use_context::<crate::introspect::IntrospectImageContext>(cx) {
+    if let Some(context) = use_context::<crate::introspect::IntrospectImageContext>() {
         let mut images = context.0.borrow_mut();
         images.push(opt_image.clone());
         if blur {
@@ -82,18 +81,18 @@ pub fn Image(
 
     if blur {
         // Retrieve value from Cache if it exists. Doing this per-image to allow image introspection.
-        let resource = crate::use_image_cache_resource(cx);
+        let resource = crate::use_image_cache_resource();
 
-        let blur_image = store_value(cx, blur_image);
-        let opt_image = store_value(cx, opt_image);
-        let alt = store_value(cx, alt);
-        let class = store_value(cx, class.map(|c| c.into_attribute_boxed(cx)));
+        let blur_image = store_value(blur_image);
+        let opt_image = store_value(opt_image);
+        let alt = store_value(alt);
+        let class = store_value(class.map(|c| c.into_attribute_boxed()));
 
-        view! { cx,
+        view! {
             <Suspense fallback=|| ()>
                 {move || {
                     resource
-                        .read(cx)
+                        .get()
                         .map(|images| {
                             let placeholder_svg = images
                                 .iter()
@@ -109,16 +108,16 @@ pub fn Image(
                             let opt_image = opt_image.get_value();
                             let class = class.get_value();
                             let alt = alt.get_value();
-                            view! { cx, <CacheImage lazy svg opt_image alt class=class priority/> }
-                                .into_view(cx)
+                            view! {  <CacheImage lazy svg opt_image alt class=class priority/> }
+                                .into_view()
                         })
                 }}
             </Suspense>
         }
     } else {
         let loading = if lazy { "lazy" } else { "eager" };
-        view! { cx, <img alt=alt class=class decoding="async" loading=loading src=opt_image/> }
-            .into_view(cx)
+        view! {  <img alt=alt class=class decoding="async" loading=loading src=opt_image/> }
+            .into_view()
     }
 }
 
@@ -129,7 +128,6 @@ enum SvgImage {
 
 #[component]
 fn CacheImage(
-    cx: Scope,
     svg: SvgImage,
     #[prop(into)] opt_image: String,
     #[prop(into, optional)] alt: String,
@@ -158,13 +156,13 @@ fn CacheImage(
 
     let loading = if lazy { "lazy" } else { "eager" };
 
-    view! { cx,
+    view! {
         {if priority {
-            view! { cx, <Link rel="preload" as_="image" href=opt_image.clone()/> }
-                .into_view(cx)
+            view! {  <Link rel="preload" as_="image" href=opt_image.clone()/> }
+                .into_view()
         } else {
-            view! { cx,  }
-                .into_view(cx)
+            view! {  }
+                .into_view()
         }}
         <img
             alt=alt.clone()

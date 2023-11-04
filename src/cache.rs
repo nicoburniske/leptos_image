@@ -4,7 +4,7 @@
 #[cfg(feature = "ssr")]
 pub async fn cache_app_images<IV>(
     root: String,
-    app_fn: impl Fn(leptos::Scope) -> IV + 'static,
+    app_fn: impl Fn() -> IV + 'static,
     parallelism: usize,
     before_mount: impl Fn() + 'static,
     after_mount: impl Fn() + 'static,
@@ -14,7 +14,9 @@ where
 {
     use crate::optimizer::CreateImageError;
 
-    let images = crate::introspect::find_app_images_with_mount(app_fn, before_mount, after_mount);
+    let images: Vec<crate::optimizer::CachedImage> =
+        crate::introspect::find_app_images_with_mount(app_fn, before_mount, after_mount);
+
     let futures: Vec<_> = images
         .iter()
         .cloned()
@@ -22,7 +24,7 @@ where
             let root = root.clone();
             tokio::task::spawn(async move { img.create_image(&root).await })
                 .await
-                .unwrap()
+                .expect("Failed to spawn task")
         })
         .collect();
 
@@ -41,6 +43,8 @@ where
         .filter_map(|img| match img.option {
             crate::optimizer::CachedImageOption::Blur(_) => {
                 let path = img.get_file_path_from_root(&root);
+                eprintln!("Caching image: {:?}", path);
+
                 Some((img, path))
             }
             _ => None,

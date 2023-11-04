@@ -24,9 +24,8 @@ use std::{
 /// }
 ///
 /// ```
-pub fn provide_image_context(cx: leptos::Scope) {
+pub fn provide_image_context() {
     let resource: ImageResource = create_blocking_resource(
-        cx,
         || (),
         |_| async {
             IMAGE_CACHE
@@ -37,13 +36,13 @@ pub fn provide_image_context(cx: leptos::Scope) {
         },
     );
 
-    leptos::provide_context(cx, resource);
+    leptos::provide_context(resource);
 }
 
 type ImageResource = Resource<(), Vec<(CachedImage, String)>>;
 
-pub(crate) fn use_image_cache_resource(cx: Scope) -> ImageResource {
-    use_context::<ImageResource>(cx).expect("Missing Image Resource")
+pub(crate) fn use_image_cache_resource() -> ImageResource {
+    use_context::<ImageResource>().expect("Missing Image Resource")
 }
 
 #[cfg(feature = "ssr")]
@@ -51,7 +50,7 @@ pub(crate) fn add_image_cache<I>(images: I)
 where
     I: IntoIterator<Item = (CachedImage, String)>,
 {
-    let mut cache = IMAGE_CACHE.write().unwrap();
+    let mut cache = IMAGE_CACHE.write().expect("Failed to lock image cache");
     for (image, svg) in images.into_iter() {
         cache.insert(image, svg);
     }
